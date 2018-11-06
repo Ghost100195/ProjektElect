@@ -1,8 +1,12 @@
 import Vue from 'vue'
+import './plugins/vuetify'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import VueElectron from 'vue-electron'
 
+
+Vue.use(VueElectron)
 Vue.config.productionTip = false
 
 new Vue({

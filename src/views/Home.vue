@@ -1,18 +1,52 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-container justify-center fill-height>
+    <v-layout column justify-space-between>
+    
+      <v-flex></v-flex>
+      <v-flex>
+        <v-layout row justify-space-around>
+          <v-flex xs3>
+            <v-btn
+              color="teal"
+              value="favorites"
+              large
+              >
+              <v-icon>favorite</v-icon>
+              <router-link to="/run">Testläufe</router-link>
+             
+            </v-btn>
+          </v-flex>
+          <v-flex xs3>
+            <v-btn
+              color="teal"
+              value="favorites"
+              large
+              >
+              <v-icon>favorite</v-icon>
+              <span>Analyse</span>
+              
+            </v-btn>
+          </v-flex>
+        </v-layout>
+      </v-flex>
+      <v-flex></v-flex>
+      
+    </v-layout>
+
+  </v-container>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+  import HelloWorld from '../components/HelloWorld'
 
-export default {
-  name: 'home',
-  components: {
-    HelloWorld
+  export default {
+    components: {
+      HelloWorld
+    }
   }
-}
 </script>
+
+<style>
+
+</style>
+
