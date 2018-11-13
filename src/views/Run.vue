@@ -1,69 +1,106 @@
 <template>
   <v-container fluid>
     <my-dialog v-if="!isSetuped || forceSetup" @finish="forceSetup = false"></my-dialog>
+    <consol-dialog :item="selected" @close="selected = null"></consol-dialog>
+    <v-layout row justify-space-around style="flex-wrap: wrap-reverse">
+      <v-flex xs12 md7>
+        <v-layout row justify-space-around wrap>
+          <v-flex xs5>
+            <v-card >
+              <v-toolbar>
+                Offene Prozesse {{ runningProcesses }}
+              </v-toolbar> 
+              <v-list two-line>
+                <v-list-tile
+                  v-for="item in processQueue"
+                  :key="item.id">  
+                  <v-list-tile-action>
+                    <v-icon v-if="item.status === 'running'" color="green">play_arrow</v-icon>
+                    <v-icon v-else color="orange">play_arrow</v-icon>
+                  </v-list-tile-action>
 
-    <v-layout row justify-space-around nowrap>
-      <v-flex xs7>
-        <v-tabs
-          v-if="getProcesses.length > 0"
-          v-model="activeTab"
-          color="cyan"
-          dark
-          slider-color="yellow">
-          <v-tab
-            v-for="terminal in getProcesses"
-            :key="terminal.key"
-            ripple>
-            {{ terminal.name }}
-          </v-tab>
-          <v-tab-item
-            v-for="(terminal, i) in getProcesses"
-            :key="terminal.key + i">
-            <v-card flat>
-              <v-card-text>
-                <v-textarea
-                  style="max-height: 500px; overflow-y: scroll"
-                  auto-grow
-                  :value="generateOutput(terminal.output)"
-                ></v-textarea>
-              </v-card-text>
-              
+                  <v-list-tile-content>
+                    <v-list-tile-title v-html="item.name"></v-list-tile-title>
+                    <v-list-tile-sub-title v-html="item.libOutput"></v-list-tile-sub-title>
+                  </v-list-tile-content>
+                </v-list-tile>
+              </v-list>
             </v-card>
-          </v-tab-item>
-        </v-tabs>
-        <v-subheader v-else>
-          Keine aktiven Prozesse!
-        </v-subheader>
+          </v-flex>
+
+          <v-flex xs5>
+            <v-card>
+              <v-toolbar>
+                History 
+              </v-toolbar> 
+
+              <ul style="list-style: none; padding: 0; margin: 0;">
+                <template v-for="item in getProcesses">
+                  <li v-for="(r,i) in item.runs" 
+                      :key="item.name + i" 
+                      class="finished_items" 
+                      @click="selected = r"
+                      :style="{background: r.status === 'finished' ? 'lightgreen' : 'lightcoral'}">
+                    {{ r.name }} - Lauf {{ i + 1 }} - {{ r.status === 'error' ? 'Failed' : r.libOutput }}
+                  </li>
+                </template>
+              </ul>
+             
+            </v-card>
+          </v-flex>
+       
+        </v-layout>
+    
+ 
       </v-flex>
-      <v-flex xs4> 
-        <h2>
-          <v-btn icon @click="test">
-            <v-icon>settings</v-icon>
-          </v-btn>Einstellungen  
-        </h2>
-        <v-combobox
-          @click="fetchAlgorithms"
-          v-model="selectAlgorithms"
-          :items="getAlgorithms"
-          label="Wähle Algorithmen: "
-          multiple
-          chips
-        ></v-combobox>
+      <v-flex xs12 md4 style="border-left: 1px solid gray; padding-left: 20px;"> 
+        <v-card>
+          <v-toolbar>
+            <v-subheader>
+              Einstellungen
+            </v-subheader>
+            <v-spacer></v-spacer>
+            <v-btn icon @click="forceSetup = true">
+              <v-icon>settings</v-icon>
+            </v-btn>  
+          </v-toolbar>
 
-        <v-combobox
-          @click="fetchDatasets"
-          v-model="selectDataset"
-          :items="getDatasets"
-          label="Wähle Datensatz: "  
-        ></v-combobox>
+          <v-container>
+            <v-combobox
+              @click="fetchAlgorithms"
+              v-model="selectAlgorithms"
+              :items="getAlgorithms"
+              label="Wähle Algorithmen: "
+              multiple
+              chips
+            ></v-combobox>
 
-        <v-text-field 
-          label="Wiederholungen: "
-          type="number"
-          v-model="timesOfExecutions"
-        ></v-text-field>
+            <v-combobox
+              @click="fetchDatasets"
+              v-model="selectDataset"
+              :items="getDatasets"
+              label="Wähle Datensatz: "  
+            ></v-combobox>
 
-        <v-btn color="primary" :disabled="!isRunPossible" @click="exec">Run</v-btn>
+            <v-text-field 
+              label="Wiederholungen: "
+              type="number"
+              v-model="timesOfExecutions"
+            ></v-text-field>
+
+
+            <v-text-field 
+              label="Anzahl der Threads"
+              type="number"
+              v-model="numberOfThreads"></v-text-field>
+          </v-container>
+
+
+       
+          <v-card-actions>
+            <v-btn color="primary" :disabled="!isRunPossible" @click="exec">Run</v-btn>
+          </v-card-actions>
+        </v-card>
       </v-flex>
     </v-layout>
 
@@ -71,30 +108,26 @@
 </template>
 
 <script>
+import ConsolDialog from '../components/ConsolDialog';
 import MyDialog from '../components/Dialog';
 import { mapGetters, mapActions, mapMutations } from 'vuex';
 export default {
   data(){
     return {
       forceSetup: false,
-      activeTab: null
+      activeTab: null, 
+      selected: null
     }
   },
   methods: {
     ...mapActions(['fetchAlgorithms', 'fetchDatasets', 'exec']),
-    ...mapMutations(['setSelectedDataset', 'setSelectedAlgorithms', 'setTimesOfExecution']),
-    test(){   
-      this.forceSetup = true 
-    },
+    ...mapMutations(['setSelectedDataset', 'setSelectedAlgorithms', 'setTimesOfExecution', 'setNumberOfThreads']),
     generateOutput(outputs){
       return outputs.join("\n");
     }
   },
-  components: {
-    MyDialog
-  },
   computed: {
-    ...mapGetters(['getProcesses','isSetuped', 'getAlgorithms', 
+    ...mapGetters(['getProcesses','isSetuped', 'getAlgorithms', 'processQueue', 'runningProcesses', 'threads',
                 'getDatasets', 'getSelectedDataset', 
                 'getSelectedAlgorithms', 'getTimesOfExecution', 'isRunPossible']),
     selectAlgorithms:{
@@ -120,11 +153,31 @@ export default {
       set(value){
         this.setTimesOfExecution(value);
       }
+    },
+    numberOfThreads: {
+      get(){
+        return this.threads;
+      },
+      set(value){
+        this.setNumberOfThreads(value);
+      }
     }
-  }
+  },
+  components: {
+    MyDialog,ConsolDialog
+  },
 }
 </script>
 
 <style>
+  .finished_items{
+    list-style: none;
+    padding: 10px;
+    border-bottom: 1px solid rgb(177, 177, 177);
+    cursor: pointer;
+  }
 
+  .finished_items:hover{
+    background: rgba(255,255,255, 0.5);
+  }
 </style>

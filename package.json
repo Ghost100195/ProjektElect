@@ -6,6 +6,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "electron:build": "vue-cli-service electron:build",
+    "electron:build-linux": "vue-cli-service electron:build -l",
+    "electron:build-mac": "vue-cli-service electron:build -m",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps"
   },

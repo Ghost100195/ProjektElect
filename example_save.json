@@ -1,0 +1,15 @@
+{
+  "algorithm": "bee",
+  "dataset": "a280.tsp",
+  "runs": [
+    {
+      "iterations": [
+        {
+          "id": 230,
+          "fitness": 4023,
+          "valid": true
+        }
+      ]
+    }
+  ] 
+}
