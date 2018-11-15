@@ -1,6 +1,7 @@
-const { read, write } = require('./src/util/output.js');
+const { read, write, readResultsFolder } = require('./src/util/output.js');
 
 const resultPath = "C:/Users/Lennard/Desktop/Playground/RuntimeEnviremont/results";
+
 
 test();
 
@@ -9,8 +10,9 @@ test();
 */
 
 async function test(){
-  
-
+  const value = await readResultsFolder(resultPath);
+  console.log(value);
+/*
   let result; 
   try{
     result = await read(resultPath + "/Cuckoo.jar/a280.tsp");
@@ -24,5 +26,5 @@ async function test(){
   }catch(err){
     console.log(err);
   }
-
+*/
 }

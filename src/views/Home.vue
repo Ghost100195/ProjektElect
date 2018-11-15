@@ -23,7 +23,7 @@
               large
               >
               <v-icon>favorite</v-icon>
-              <span>Analyse</span>
+              <router-link to="/chart">Analyse</router-link>
               
             </v-btn>
           </v-flex>

@@ -12,6 +12,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "chart.js": "^2.7.3",
     "vue": "^2.5.17",
     "vue-electron": "^1.0.6",
     "vue-router": "^3.0.1",

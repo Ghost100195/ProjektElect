@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import electron from 'electron';
 import { parseInput } from './util/process';
-import { write } from './util/output';
+import { write, readResultsFolder, read } from './util/output';
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 
@@ -21,7 +21,9 @@ export default new Vuex.Store({
     processes: {},
     processQueue: {},
     runningProcesses: 0,
-    threads: 2
+    threads: 2,
+    savedData: null,
+    loadedData: {},
   },
   mutations: {
     setDirectoryJars(state, path){
@@ -107,6 +109,16 @@ export default new Vuex.Store({
     },
     setNumberOfThreads(state, payload){
       state.threads = payload;
+    },
+    setSavedData(state, payload){
+      state.savedData = payload;
+    },
+    setLoadedData(state, payload){
+      const obj = {};
+      for(let loaded of payload){
+        obj[loaded.algorithm+ "/" + loaded.dataset] = loaded;
+      }
+      state.loadedData = {...state.loadedData, ...obj};
     }
   },
   actions: {
@@ -214,6 +226,23 @@ export default new Vuex.Store({
           });
         }                      
       }
+    },
+    async fetchSavedData({ getters, commit }){
+      const data = await readResultsFolder(getters.getDirectorySavesPath);
+      commit('setSavedData' ,data);
+    },
+    async loadSavedData({ getters, commit }, {datasets, algorithms}){
+      const results = [];
+      const loadedData = getters.getLoadedData;
+      const path = getters.getDirectorySavesPath;
+      for(let alg of algorithms){
+        for(let data of datasets){
+          if(!loadedData[alg + "/" + data]){
+            results.push(await read(`${path}/${alg}/${data}`));
+          }
+        }
+      }
+      commit('setLoadedData', results);
     }
   },
   getters: {
@@ -263,6 +292,12 @@ export default new Vuex.Store({
       return (algorithmName) => {
         return Object.keys(state.processQueue).filter((key) => state.processQueue[key].name === algorithmName).length;
       }
+    },
+    getSavedData(state){
+      return state.savedData;
+    },
+    getLoadedData(state){
+      return state.loadedData;
     }
   }
 })

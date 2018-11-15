@@ -5,7 +5,6 @@ const fs = require('fs');
 const cache = {};
 
 async function read(path){
-  console.log("read")
   return new Promise((resolve, reject) => {
     fs.readFile(path + ".json", (err, data) => {
       if(err && err.code === 'ENOENT') {
@@ -26,8 +25,8 @@ async function write(path, dataForFile, options){
     }else{
       const splittedPath = path.split("/");
       cache[path] = {
-        algorithm: splittedPath[splittedPath.length - 1],
-        dataset: splittedPath[splittedPath.length - 2],
+        algorithm: splittedPath[splittedPath.length - 2],
+        dataset: splittedPath[splittedPath.length - 1],
         runs: [...dataForFile]
       } 
     }
@@ -65,7 +64,30 @@ async function write(path, dataForFile, options){
   })
 }
 
+async function readResultsFolder(path){
+  return new Promise(async (resolve, reject) => {
+    const toReturn = {};
+    const jarFolders = await readDir(path);
+    for(let jarFolder of jarFolders){
+      let datasets = await readDir(path + "/" + jarFolder);
+      datasets = datasets.map((d) => {
+        return d.replace(".json", "");
+      });
+      toReturn[jarFolder] = [...datasets];
+    }
+    resolve(toReturn);
+  });
+}
+
+
+async function readDir(path){
+  return new Promise((resolve) => {
+    fs.readdir(path, (err, files) => {
+      resolve(files);
+    });
+  });
+}
 
 module.exports = {
-  read, write
+  read, write, readResultsFolder
 }

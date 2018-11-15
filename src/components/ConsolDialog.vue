@@ -15,7 +15,7 @@
 
         <v-container>
           <v-textarea
-            :style="{overflow: 'scroll-y', color: item.status === 'error' ? 'red' : 'black'}"
+            :style="{overflow: 'scroll-y', color: item && item.status === 'error' ? 'red' : 'black'}"
             outline
             label="Console Ausgabe"
             name="input-7-1"
