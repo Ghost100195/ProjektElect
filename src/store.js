@@ -17,7 +17,7 @@ export default new Vuex.Store({
     datasets: null,
     selectedDataset: null,
     selectedAlgorithms: null,
-    timesOfExecutions: 1,
+    timesOfExecutions: 10,
     processes: {},
     processQueue: {},
     runningProcesses: 0,
@@ -51,7 +51,8 @@ export default new Vuex.Store({
       state.timesOfExecutions = payload;
     },
     addNewProcess(state, payload){
-      state.processQueue[payload.id] = {...payload};
+      Vue.set(state.processQueue, payload.id, payload);
+      //state.processQueue[payload.id] = {...payload};
     },
     setRunning(state, payload){
       state.processQueue[payload.id] = {
@@ -101,7 +102,7 @@ export default new Vuex.Store({
       }
       state.processes[payload.name].runs.push({ 
         ...state.processQueue[payload.id],
-        status: payload.code === 0 ? 'finished' : 'error', 
+        status: payload.code === 0 ? 'finished' : 'error'
       });
  
       Vue.delete(state.processQueue, payload.id);
@@ -119,6 +120,14 @@ export default new Vuex.Store({
         obj[loaded.algorithm+ "/" + loaded.dataset] = loaded;
       }
       state.loadedData = {...state.loadedData, ...obj};
+    },
+    clearProcessQueue(state){
+      state.processQueue = Object.keys(state.processQueue).reduce((acc, key) => {
+        if(state.processQueue[key].status === 'running'){
+          acc[key] = { ... state.processQueue[key]}
+        }
+        return acc;
+      }, {})
     }
   },
   actions: {
@@ -154,90 +163,96 @@ export default new Vuex.Store({
                                 best: null,
                                 raw: [], 
                                 jar: alg,
-                                name: alg.replace(".jar", "")
+                                name: alg.replace(".jar", ""),
+                                dataset: getters.getSelectedDataset
                               }).map((r, i) => ({...r, id: alg+i }));
         for(let r of runs){
           commit('addNewProcess', r);
         }
-      }   
+      }  
       
-      dispatch('startProcess');
-    },
-    startProcess({ getters, commit, dispatch }){
+      let i = 0;
       for(let key in getters.processQueue){
-        if(getters.runningProcesses < getters.threads && getters.processQueue[key].status === 'waiting'){  
-          const item = getters.processQueue[key];
-          commit('setRunning', item);
-          const spawn =  electron.remote.require('child_process').spawn;
-          const java = 'java';
-          const jar = '-jar';
-    
-          const pathJar = `${getters.getDirectoryJarsPath}/${item.jar}`;
-          const pathToData = `${getters.getDirectoryDatasetsPath}/${getters.getSelectedDataset}`;
-          const child = spawn(java, [ jar, pathJar, pathToData ] );
-    
-          let iterations = [];
-          let cache = [];
-          
-          child.stdout.on('data', (data) => {
-            const convertedData = data.toString();
-            const results = parseInput(convertedData);
-            if(results){
-              for(let result of results){
-                if(result.isLibData){
-                  iterations.push(result.item);
-                }
-                cache.push({
-                    id: item.id,
-                    best: result.isLibData ? result.item : null,
-                    libOutput: result.isLibData ? result.data : null,
-                    raw: convertedData //!result.isLibData ? result.data : null,
-                  }
-                );
-              }
-            }
-            
-            if(cache.length > 25) {
-              commit('addMutipleOutputs', cache);
-              cache = [];
-            }
-          });
-    
-          child.stderr.on('data', (data) => {
-            commit('addOutput', {
-              id: item.id,
-              raw: [ data.toString() ],
-              libOutput: null
-            });
-            console.log(`stderr: ${data}`);
-          });
-          
-          child.on('close', (code) => {
-            if(cache.length > 0) commit('addMutipleOutputs', cache);
-
-            write(`${getters.getDirectorySavesPath}/${item.jar}/${getters.getSelectedDataset}`, [{ iterations }], {cacheCount: getters.getOpenProcessForAlgorithm(item.name) - 1});
-            commit('finish', {
-              id: item.id,
-              name: item.name,
-              code
-            }); 
-            dispatch('startProcess');
-            console.log(`child process exited with code ${code}`);
-          });
-        }                      
+        if( i < getters.getTimesOfExecution ){ 
+          dispatch('startProcess', getters.processQueue[key]);
+          i++;
+        }
       }
+    },
+    startProcess({ getters, commit, dispatch }, item){
+      if(item && getters.runningProcesses < getters.threads && item.status === 'waiting'){  
+        commit('setRunning', item);
+        const spawn =  electron.remote.require('child_process').spawn;
+        const java = 'java';
+        const jar = '-jar';
+  
+        const pathJar = `${getters.getDirectoryJarsPath}/${item.jar}`;
+        const pathToData = `${getters.getDirectoryDatasetsPath}/${getters.getSelectedDataset}`;
+        const child = spawn(java, [ jar, pathJar, pathToData ] );
+  
+        let iterations = [];
+        let cache = [];
+        
+        child.stdout.on('data', (data) => {
+          const convertedData = data.toString();
+          const results = parseInput(convertedData);
+          if(results){
+            for(let result of results){
+              if(result.isLibData){
+                iterations.push(result.item);
+              }
+              cache.push({
+                  id: item.id,
+                  best: result.isLibData ? result.item : null,
+                  libOutput: result.isLibData ? result.data : null,
+                  raw: convertedData //!result.isLibData ? result.data : null,
+                }
+              );
+            }
+          }
+          
+          if(cache.length >= 50) {
+            commit('addMutipleOutputs', cache);
+            cache = [];
+          }
+        });
+  
+        child.stderr.on('data', (data) => {
+          commit('addOutput', {
+            id: item.id,
+            raw: [ data.toString() ],
+            libOutput: null
+          });
+          console.log(`stderr: ${data}`);
+        });
+        
+        child.on('close', (code) => {
+          if(cache.length > 0) commit('addMutipleOutputs', cache);
+
+          write(`${getters.getDirectorySavesPath}/${item.jar}/${getters.getSelectedDataset}`, [{ iterations }], {cacheCount: getters.getOpenProcessForAlgorithm(item.name) - 1});
+          commit('finish', {
+            id: item.id,
+            name: item.name,
+            code  
+          }); 
+
+
+          dispatch('startProcess', getters.processQueue[Object.keys(getters.processQueue).find((key) => getters.processQueue[key].status === 'waiting')]);
+          console.log(`child process exited with code ${code}`);
+        });
+      }                         
     },
     async fetchSavedData({ getters, commit }){
       const data = await readResultsFolder(getters.getDirectorySavesPath);
       commit('setSavedData' ,data);
     },
-    async loadSavedData({ getters, commit }, {datasets, algorithms}){
+    async loadSavedData({ getters, commit }, {datasets, algorithms, force}){ 
       const results = [];
       const loadedData = getters.getLoadedData;
       const path = getters.getDirectorySavesPath;
       for(let alg of algorithms){
         for(let data of datasets){
-          if(!loadedData[alg + "/" + data]){
+          if(force || !loadedData[alg + "/" + data]){
             results.push(await read(`${path}/${alg}/${data}`));
           }
         }

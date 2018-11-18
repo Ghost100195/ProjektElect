@@ -1,60 +1,91 @@
 <template>
   <v-container fill-height>
-    <v-layout column fill-height>
-      <v-flex>
+    <v-dialog
+      width="50%"
+      v-model="dataDialog">
+      <v-card style="background: rgba(255,255,255,0.6); color: black;" >
+        <v-toolbar style="background: rgba(255,255,255,0.8);">
+          Auswahl der Algorithmen und Datensätzen
+        </v-toolbar>
+
+        <v-layout row justify-space-around pa-4>
+          <v-flex xs5>
+            <fieldset style="text-align:center; padding: 0; margin: 0;">
+              <legend>Algorithmen</legend>
+              <v-layout row>
+                <v-flex
+                  xs6
+                  class="list-elements"
+                  style=""
+                  v-for="algorithm of getAlgorithms"
+                  :key="algorithm"
+                  @click="checkAlgorithm(algorithm)">
+
+                  <v-layout>
+                    <v-subheader>{{ algorithm }}</v-subheader>
+                    <v-spacer></v-spacer>
+                    <v-icon v-if="selectedAlgorithm.includes(algorithm)" color="green">check</v-icon>
+                  </v-layout>
+                </v-flex>
+              </v-layout>
+            </fieldset>
+            
+          </v-flex>
+          <v-flex xs5>
+            <fieldset style="text-align:center; padding: 0; margin: 0;">
+              <legend>Algorithmen</legend>
+              <v-layout row>
+                <v-flex
+                  xs6
+                  class="list-elements"
+                  style=""
+                  v-for="dataset of getDatasets"
+                  :key="dataset"
+                  @click="checkDataset(dataset)">
+
+                  <v-layout>
+                    <v-subheader>{{ dataset }}</v-subheader>
+                    <v-spacer></v-spacer>
+                    <v-icon v-if="selectedDataset.includes(dataset)" color="green">check</v-icon>
+                  </v-layout>
+         
+                </v-flex>
+              </v-layout>
+            </fieldset>
+          </v-flex>
+        </v-layout>
+        
+      
+        <v-card-actions v-show="!minimize" style="background: rgba(255,255,255,0.6); color: white;">       
+          <v-btn @click="reset">Lösche Einstellungen</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn 
+            @click="load" 
+            :disabled="!loadIsPossible"
+          >Lade</v-btn>
+        </v-card-actions>
+      </v-card>        
+    </v-dialog>
+ 
+    <v-layout>
+      <v-flex xs12>
         <v-card>
+
           <v-toolbar>
-            <v-subheader>
-              Einstellungen
-   
-            </v-subheader>
-            <v-spacer></v-spacer>
-            <v-btn icon @click="minimize = !minimize">
-              <v-icon v-if="!minimize">keyboard_arrow_up</v-icon>
-              <v-icon v-else>keyboard_arrow_down</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <v-layout row wrap justify-space-around v-show="!minimize">
-            <v-flex xs4>
-              <v-subheader>
-                Algorithmen
-              </v-subheader>
-              <v-checkbox 
-                v-for="algorithm of getAlgorithms"
-                :key="algorithm"
-                v-model="selectedAlgorithm" 
-                :label="algorithm" 
-                :value="algorithm">
-              </v-checkbox>
-            </v-flex>
-            <v-flex xs4>
-              <v-subheader>
-                Dataset
-              </v-subheader>
-              <v-checkbox 
-                v-for="dataset of getDatasets"
-                :key="dataset"
-                v-model="selectedDataset" 
-                :label="dataset" 
-                :value="dataset">
-              </v-checkbox>
-            </v-flex>
-          </v-layout>
-
-          <v-card-actions v-show="!minimize">       
-            <v-btn @click="reset">Lösche Einstellungen</v-btn>
+            <v-btn @click="dataDialog = true;">T</v-btn>
+            <v-subheader>Visualisierung</v-subheader>
             <v-spacer></v-spacer>
             <v-btn 
-              @click="load" 
-              :disabled="!loadIsPossible"
-            >Lade</v-btn>
-          </v-card-actions>
+              @click="calculateStandardDevision"
+              :color="activ.standardDeviation ? 'green' : 'red'">
+              Standardabweichung
+            </v-btn>
+            <v-btn @click="minMax" :color="activ.minMax ? 'green' : 'red'">minMax</v-btn>
+            <v-btn @click="reload">Reload</v-btn>
+          </v-toolbar>
+          
+          <canvas id="canvas"></canvas>
         </v-card>
-      </v-flex>
-      <v-flex xs12 style="position: relative">
-        <div style="position: absolute; top: 15px; right: 15px; width: 300px; height: 50px; background: gray;"></div>
-        <canvas id="canvas"></canvas>
       </v-flex>
     </v-layout>
   </v-container>
@@ -64,10 +95,12 @@
 <script>
 import { mapGetters, mapActions } from 'vuex';
 import Chart from 'chart.js'
-import { callbackify } from 'util';
+import { joinIterations, avgIterations, standardDeviation, transformIterationToDatasetData } from '../util/chartjs.js';
 export default {
   data(){
     return {
+      dataDialog: true,
+      stepSize: 20,
       minimize: false,
       colors: {
         "red": "red",
@@ -76,6 +109,10 @@ export default {
         "yellow": "yellow",
         "green": "green",
         
+      },
+      activ: {
+        standardDeviation: false,
+        minMax: false
       },
       selectedAlgorithm: [],
       selectedDataset: [],
@@ -180,12 +217,32 @@ export default {
   },
   methods: {
     ...mapActions(['fetchSavedData', 'loadSavedData']),
-    load(){
-      this.config.data.datasets = this.config.data.datasets.filter((dataset) => {
-        return this.selectedItemAsPath.includes(dataset.label)
+    checkAlgorithm(item){
+      const index = this.selectedAlgorithm.indexOf(item);
+      if(index >= 0){
+        this.selectedAlgorithm.splice(index, 1);
+      }else{
+        this.selectedAlgorithm.push(item);
+      }
+    },
+    checkDataset(item){
+      const index = this.selectedDataset.indexOf(item);
+      if(index >= 0){
+        this.selectedDataset.splice(index, 1);
+      }else{
+        this.selectedDataset.push(item);
+      }
+    },
+    reload(){
+       this.loadSavedData({
+        algorithms: this.selectedAlgorithm, 
+        datasets: this.selectedDataset,
+        force: true
       });
-      window.myLine.update();
-
+    },
+    load(){
+      this.dataDialog = false;
+      this.removeEverthing();
       this.loadSavedData({
         algorithms: this.selectedAlgorithm, 
         datasets: this.selectedDataset
@@ -194,38 +251,125 @@ export default {
     reset(){
       this.selectedAlgorithm = [];
       this.selectedDataset = [];
+      this.config.data.datasets = [];
+      window.myLine.update();
     },
-    addDataset(item){
-      const stepSize = 20;
+    addDatasetToView(dataset){
       const colorNames = Object.keys(this.colors);
       const colorName = colorNames[ this.config.data.datasets.length % colorNames.length];
       const newDataset = {
-        label: item.algorithm +"/"+ item.dataset,
-          backgroundColor: this.colors[colorName],
-          borderColor:  this.colors[colorName],
-          data: [
-            ...item.runs[0].iterations
-                    .filter((_, index) => index % stepSize === 0)
-                    .map((iter) => Number.parseInt(iter.fitness))
-          ],
+        backgroundColor: this.colors[colorName],
+        borderColor:  this.colors[colorName],
         fill: false,
+        ...dataset
       };
-
-      
-      for(let i = 0; i < item.runs[0].iterations.length/stepSize; i++){
+      this.config.data.datasets.push(newDataset);
+      window.myLine.update();
+    },
+    updateXAxies(iterations,stepSize){
+      for(let i = 0; i < iterations.length/stepSize; i++){
         if(!this.config.data.labels.includes(i * stepSize)){
           this.config.data.labels.push(i * stepSize);
         }
       }
-
-      this.config.data.datasets.push(newDataset);
-      window.myLine.update();
+    },
+    addDataset(item){  
+      let joinedIterations = joinIterations(item, this.stepSize);
+      let avgData = avgIterations(joinedIterations);
+      this.updateXAxies(item.runs[0].iterations, this.stepSize);
+      this.addDatasetToView({
+        label: item.algorithm +"/"+ item.dataset,
+        data: avgData,
+      });
+    },
+    calculateStandardDevision(){
+      if(this.activ.standardDeviation){
+        this.activ.standardDeviation = false;
+        for(let dataset of this.config.data.datasets){
+          const matching = dataset.label.match(/Lower|Upper/);
+          if(matching){
+            this.removeDataset(dataset.label);
+          }
+        }
+        return;
+      }
+      for(let dataset of this.config.data.datasets){
+        this.activ.standardDeviation = true;
+        const item = this.loadedData[dataset.label];
+        if(item){
+          let joinedIterations = joinIterations(item, this.stepSize);
+          let avgData = dataset.data;
+          let s = standardDeviation(joinedIterations, avgData);
+       
+          for(let i = 0; i <= 2; i+= 2){
+            this.addDatasetToView({
+              label: (i - 1) < 0 ? "Lower: " + dataset.label : "Upper: " + dataset.label, 
+              data: s.map((d, index) => avgData[index] + (d * (i - 1))),
+              borderColor: dataset.borderColor,
+              borderDash: [5, 5],
+              pointRadius: 0
+            });
+          }
+        }   
+      }  
+    },
+    minMax(){
+      if(this.activ.minMax){
+        this.activ.minMax = false;
+        for(let dataset of this.config.data.datasets){
+          const matching = dataset.label.match(/Min|Max/);
+          if(matching){
+            this.removeDataset(dataset.label);
+            const label = dataset.label.replace("Max: ", "");
+            if(this.loadedData[label]) this.addDataset(this.loadedData[label]);
+          }
+        } 
+        return;
+      }
+      for(let dataset of this.config.data.datasets){
+        const item = this.loadedData[dataset.label];
+        this.activ.minMax = true;
+        if(item){
+          const minMaxResult = item.runs.reduce((acc, crr) => {
+            const best = crr.iterations[crr.iterations.length - 1];
+            if(!acc.max) acc.max = crr.iterations;
+            if(!acc.min) acc.min = crr.iterations;
+            if(acc.max[acc.max.length - 1].fitness < best.fitness) acc.max = crr.iterations;
+            if(acc.min[acc.min.length - 1].fitness > best.fitness) acc.min = crr.iterations;
+            return acc;    
+          }, {
+            min: null,
+            max: null
+          });
+          const min = transformIterationToDatasetData(minMaxResult.min, this.stepSize);
+          const max = transformIterationToDatasetData(minMaxResult.max, this.stepSize);
+          this.addDatasetToView({
+            label:  "Min: " + dataset.label,
+            data: min,
+          });
+          this.addDatasetToView({
+            label:  "Max: " + dataset.label,
+            data: max,
+          });
+          this.removeDataset(dataset.label);
+        }
+      }
     },
     setup(){
-      console.log(this.getSavedData);
-      
       var ctx = document.getElementById('canvas').getContext('2d');
       window.myLine = new Chart(ctx, this.config);
+    },
+    removeEverthing(){
+      this.config.data.datasets = this.config.data.datasets.filter((dataset) => {
+        return this.selectedItemAsPath.includes(dataset.label)
+      });
+      window.myLine.update();
+    },
+    removeDataset(label){
+      this.config.data.datasets = this.config.data.datasets.filter((dataset) => {
+        return dataset.label !== label;
+      });
+      window.myLine.update();
     }
   },
   mounted(){
@@ -236,5 +380,25 @@ export default {
 </script>
 
 <style>
+  .control-panel{
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+ 
+    height: 50px; 
+    background: gray;
+  }
 
+
+  .list-elements{
+    width: 100%; 
+    background: rgba(255,255,255, 0.8);
+    border-bottom: 1px solid gray;
+    margin: 5px;
+    cursor: pointer;
+  }
+
+  .list-elements:hover{
+    background: rgba(0,0,0,0.3);
+  }
 </style>

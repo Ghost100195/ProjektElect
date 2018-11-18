@@ -16,13 +16,14 @@
         <v-card
           class="mb-1"  
           height="200px"
+
         >
           <v-container>
             <v-subheader>
               Wähle den Ordner in dem sich die Algorithmen befinden
             </v-subheader>
             <v-text-field
-              :value="getDirectoryJarsPath"
+              :value="short(getDirectoryJarsPath)"
               @input="(val) => setPath(val, 'algorithm')"
               @click:append="openFileDialog('algorithm')"
               outline
@@ -33,19 +34,24 @@
             </v-text-field>
           </v-container>
         </v-card>
-        <v-btn 
-          flat
-          :disabled="!isSetuped"
-          @click="$emit('cancel')">
-          Abbrechen
-        </v-btn>
-        <v-btn
-          color="primary"
-          @click="e1 = 2"
-          :disabled="!getDirectoryJarsPath && getDirectoryJarsPath.length <= 0"
-        >
-          Weiter
-        </v-btn>
+
+        <v-layout>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            @click="finish"
+            :disabled="!isSetuped">
+            Fertig
+          </v-btn> 
+          <v-btn
+            color="primary"
+            @click="e1 = 2"
+            :disabled="!getDirectoryJarsPath && getDirectoryJarsPath.length <= 0">
+            Weiter
+          </v-btn>
+          
+        </v-layout>
+       
       </v-stepper-content>
 
       <v-stepper-content step="2">
@@ -58,7 +64,7 @@
               Wähle den Ordner in dem sich die Datensätze befinden
             </v-subheader>
             <v-text-field
-              :value="getDirectoryDatasetsPath"
+              :value="short(getDirectoryDatasetsPath)"
               @click:append="openFileDialog('dataset')"
               @input="(val) => setPath(val, 'dataset')"
               outline
@@ -70,19 +76,28 @@
           </v-container>
         </v-card>
 
-        <v-btn 
-          flat
-          :disabled="!isSetuped"
-          @click="$emit('cancel')">
-          Abbrechen
-        </v-btn>
-        <v-btn
-          color="primary"
-          @click="e1 = 3"
-          :disabled="!getDirectoryDatasetsPath && getDirectoryDatasetsPath.length <= 0"
-        >
-          Weiter
-        </v-btn>
+        <v-layout>
+          <v-btn
+            color="primary"
+            @click="e1 = 1">
+            Zurück
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            @click="finish"
+            :disabled="!isSetuped">
+            Fertig
+          </v-btn>
+
+          <v-btn
+            color="primary"
+            @click="e1 = 3"
+            :disabled="!getDirectoryDatasetsPath && getDirectoryDatasetsPath.length <= 0"
+          >
+            Weiter
+          </v-btn>
+        </v-layout>
       </v-stepper-content>
 
        <v-stepper-content step="3">
@@ -95,7 +110,7 @@
               Wähle den Ordner in dem die Ergebnisse der Testläufe gespeichert werden
             </v-subheader>
             <v-text-field
-              :value="getDirectorySavesPath"
+              :value="short(getDirectorySavesPath)"
               @click:append="openFileDialog('results')"
               @input="(val) => setPath(val, 'results')"
               outline
@@ -107,19 +122,23 @@
           </v-container>
         </v-card>
 
-        <v-btn 
-          flat
-          :disabled="!isSetuped"
-          @click="$emit('cancel')">
-          Abbrechen
-        </v-btn>
-        <v-btn
-          color="primary"
-          @click="finish"
-          :disabled="!getDirectoryDatasetsPath && getDirectoryDatasetsPath.length <= 0"
-        >
-          Fertig
-        </v-btn>
+        <v-layout>
+          <v-btn
+            color="primary"
+            @click="e1 = 2">
+            Zurück
+          </v-btn>
+          <v-spacer></v-spacer>
+         
+          <v-btn
+            color="primary"
+            @click="finish"
+            :disabled="!isSetuped"
+          >
+            Fertig
+          </v-btn>
+        </v-layout>
+       
       </v-stepper-content>
     </v-stepper-items>
   </v-stepper>
@@ -161,6 +180,11 @@ export default {
           this.setPath(paths[0], type);
         }
       });      
+    },
+    short(path){
+      if(path.length === 0) return "";
+      const split = path.split(/\/|\\/);
+      return "/" + split.slice(split.length - 3, split.length).join("/");
     }
   },
   created(){

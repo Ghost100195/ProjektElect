@@ -2,7 +2,7 @@
     <v-dialog
       :persistent="!isSetuped"
       v-model="dialog"
-      width="500"
+      width="600"
     >
       <my-stepper
         @cancel="$emit('finish')"
