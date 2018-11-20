@@ -25,7 +25,7 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn @click="$emit('close')" flat>Schließen</v-btn>
+          <v-btn @click="$emit('close')" color="green">Schließen</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -8,7 +8,11 @@
           <v-flex xs5>
             <v-card >
               <v-toolbar>
-                Prozesse Warteschlange
+                <v-subheader style="padding-left: 0">
+                   Prozesse Warteschlange
+                </v-subheader>
+                <v-spacer></v-spacer>
+                <v-btn color="red" :disabled="!isRunning" @click="stopExecution">Stop</v-btn>   
               </v-toolbar> 
               <v-layout v-if="getProcesses" style="padding: 10px;">
                 <h5>Laufende: {{ processQueueFilter((p) => p.status === 'running').length }}</h5>
@@ -43,7 +47,13 @@
           <v-flex xs5>
             <v-card>
               <v-toolbar>
-                History 
+                <v-subheader style="padding-left: 0">
+                  History
+                </v-subheader>
+                <v-spacer></v-spacer>
+                <v-btn icon @click="clearProcesses">
+                  <v-icon color="red" >delete</v-icon>
+                </v-btn>    
               </v-toolbar> 
               <v-layout v-if="getProcesses" style="padding: 10px;">
                 <h5>Erfolgreich: {{ processFilter((p) => p.status === 'finished').length }}</h5>
@@ -77,7 +87,7 @@
       <v-flex xs12 md4 style="border-left: 1px solid gray; padding-left: 20px;"> 
         <v-card>
           <v-toolbar>
-            <v-subheader>
+            <v-subheader style="padding-left: 0">
               Einstellungen
             </v-subheader>
           </v-toolbar>
@@ -122,7 +132,7 @@
 
        
           <v-card-actions style="padding-right: 25px; padding-left: 20px; padding-bottom: 15px;">
-            <v-btn color="red" :disabled="!isRunning" @click="stopExecution">Stop</v-btn>
+            
             <v-spacer></v-spacer>
             <v-btn color="primary" :disabled="!isRunPossible || isRunning" @click="exec">
               <v-icon>play_arrow</v-icon>
@@ -149,7 +159,7 @@ export default {
   },
   methods: {
     ...mapActions(['fetchAlgorithms', 'fetchDatasets', 'exec']),
-    ...mapMutations(['setSelectedDataset', 'setSelectedAlgorithms', 'setTimesOfExecution', 'setNumberOfThreads', 'clearProcessQueue']),
+    ...mapMutations(['setSelectedDataset', 'setSelectedAlgorithms', 'setTimesOfExecution', 'setNumberOfThreads', 'clearProcessQueue', 'clearProcesses']),
     generateOutput(outputs){
       return outputs.join("\n");
     },

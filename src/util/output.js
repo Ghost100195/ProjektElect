@@ -88,6 +88,33 @@ async function readDir(path){
   });
 }
 
+async function writeConfigFile(config){
+
+  console.log(config);
+  return new Promise((resolve) => {
+    fs.writeFile('./config.json', JSON.stringify(config, null, 2), (err) => {
+      if(err){
+        console.log(err);
+      }else{
+        resolve();
+      }
+    })
+  })
+}
+
+async function readConfigFile(){
+  return new Promise((resolve) => {
+    fs.readFile('./config.json', (err, data) => {
+      if(err){
+      }else{
+        const parsed = JSON.parse(data.toString());
+        resolve(parsed);
+      }
+      
+    })
+  })
+}
+
 module.exports = {
-  read, write, readResultsFolder
+  read, write, readResultsFolder, writeConfigFile, readConfigFile
 }

@@ -72,7 +72,7 @@
         <v-card>
 
           <v-toolbar>
-            <v-btn @click="dataDialog = true;">T</v-btn>
+            <v-btn @click="dataDialog = true;" color="green">Datensätze</v-btn>
             <v-subheader>Visualisierung</v-subheader>
             <v-spacer></v-spacer>
             <v-btn 
@@ -81,7 +81,7 @@
               Standardabweichung
             </v-btn>
             <v-btn @click="minMax" :color="activ.minMax ? 'green' : 'red'">minMax</v-btn>
-            <v-btn @click="reload">Reload</v-btn>
+            <v-btn @click="reload">Neu laden</v-btn>
           </v-toolbar>
           
           <canvas id="canvas"></canvas>
@@ -344,10 +344,14 @@ export default {
           const min = transformIterationToDatasetData(minMaxResult.min, this.stepSize);
           const max = transformIterationToDatasetData(minMaxResult.max, this.stepSize);
           this.addDatasetToView({
+            borderColor: dataset.borderColor,
+            backgroundColor: 'blue',
             label:  "Min: " + dataset.label,
             data: min,
           });
           this.addDatasetToView({
+            borderColor: dataset.borderColor,
+            backgroundColor: 'red',
             label:  "Max: " + dataset.label,
             data: max,
           });

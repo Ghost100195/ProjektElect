@@ -2,17 +2,18 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import electron from 'electron';
 import { parseInput } from './util/process';
-import { write, readResultsFolder, read } from './util/output';
+import { write, readResultsFolder, read, writeConfigFile, readConfigFile } from './util/output';
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
 
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    directoryJars: isDevelopment ? "C:/Users/Lennard/Desktop/Playground/RuntimeEnviremont/algorithms" : "",
-    directoryDatasets: isDevelopment ? "C:/Users/Lennard/Desktop/Playground/RuntimeEnviremont/datasets" : "",
-    directorySaves: isDevelopment ? "C:/Users/Lennard/Desktop/Playground/RuntimeEnviremont/results" : "",
+    directoryJars: "",//isDevelopment ? "C:/Users/Lennard/Desktop/Playground/RuntimeEnviremont/algorithms" : "",
+    directoryDatasets: "",//isDevelopment ? "C:/Users/Lennard/Desktop/Playground/RuntimeEnviremont/datasets" : "",
+    directorySaves: "",//isDevelopment ? "C:/Users/Lennard/Desktop/Playground/RuntimeEnviremont/results" : "",
     algorithms: null,
     datasets: null,
     selectedDataset: null,
@@ -106,6 +107,8 @@ export default new Vuex.Store({
       });
  
       Vue.delete(state.processQueue, payload.id);
+
+
       state.runningProcesses -= 1;
     },
     setNumberOfThreads(state, payload){
@@ -128,6 +131,9 @@ export default new Vuex.Store({
         }
         return acc;
       }, {})
+    },
+    clearProcesses(state){
+      state.processes = {};
     }
   },
   actions: {
@@ -258,6 +264,20 @@ export default new Vuex.Store({
         }
       }
       commit('setLoadedData', results);
+    },
+    async saveSetting({ getters }){
+      await writeConfigFile({
+        directoryJars: getters.getDirectoryJarsPath,
+        directoryDatasets: getters.getDirectoryDatasetsPath,
+        directorySaves: getters.getDirectorySavesPath
+      });
+    },
+    async readSetting({ commit }){
+      const config = await readConfigFile();
+      console.log(config);
+      commit('setDirectoryJars', config.directoryJars ? config.directoryJars : "");
+      commit('setDirectoryDatasets', config.directoryDatasets ? config.directoryDatasets : "");
+      commit('setDirectorySaves', config.directorySaves ? config.directorySaves : "");
     }
   },
   getters: {
