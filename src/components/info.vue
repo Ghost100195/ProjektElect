@@ -2,7 +2,7 @@
   <v-dialog
       @input="closed"
       :value="value"
-      width="500"
+      width="600"
     >
     <v-card>
       <v-toolbar>

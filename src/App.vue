@@ -36,81 +36,110 @@
     <info-dialog v-model="infoDialog">
       <template slot="header"  >
         <h1 v-if="actualPath === '/chart'">Chart Information</h1>
-        <h1 v-else>Auswertung Information</h1>
+        <h1 v-if="actualPath === '/run'">Auswertung Information</h1>
+        <h1 v-if="actualPath === '/'">Menü Information</h1>
       </template>
 
       <v-container v-if="actualPath === '/chart'">
           <h3>Auswahl Daten</h3>
-          <p>Die Auswahl von Datensätzen und Algorithmen kann durch ein Klick auf <strong>Datensätze</strong> aufgerufen werden.</p>
-          <p>Die Wahl eines Algorithmus kann dazu führen, dass weniger Datensätze aufgelistet werden und vise versa. </p> 
-          <p>Dies bedeutet, dass es für den gewählten Algorithmus keine Ergebnisse für den verschwundenen Datensatz gab (oder anders rum). </p> 
+          <div class="box" style="margin-bottom: 10px;">
+            <p>Die Auswahl von Datensätzen und Algorithmen kann durch ein Klick auf <strong>Datensätze</strong> aufgerufen werden.</p>
+            <p>Falls ein Datensatz oder Algorithmus bei der Auswahl des jeweiligen anderen verschwindet, gibt es keine Daten für eine solche Kombination.</p> 
+          </div>
 
           <h3>Standardabweichung</h3>
-          <p>Nach Auswahl einer Kombination von Datensatz/Algorithmus kann die Standardabweichung durch einen Klick auf <strong>Standardabweichung</strong>, berechnet werden</p>
-          <p>Diese wird dann durch eine untere und oberen Grenze im Diagramm angezeigt</p>
-          <p>Durch einen erneuten Klick auf <strong>Standardabweichung</strong> können die Graphen wieder entfernt werden</p>
-  
+          <div class="box" style="margin-bottom: 10px;">
+            <p>Nach Auswahl von Datensatz und Algorithmus kann die Standardabweichung durch einen Klick auf <strong>Standardabweichung</strong> berechnet werden.</p>
+            <p>Durch einen erneuten Klick auf <strong>Standardabweichung</strong> können die Graphen wieder entfernt werden.</p>
+          </div>
+
           <h3>MinMax</h3>
-          <p>Nach Auswahl einer Kombination von Datensatz/Algorithmus kann der schlechteste sowie der beste Durchlauf durch einen Klick auf <strong>MinMax</strong>, angezeigt werden</p>
-          <p>Der beste sowie schlechteste Durchlauf werden dann im Diagramm angezeigt</p>
-          <p>Durch einen erneuten Klick auf <strong>MinMax</strong> können die Graphen wieder entfernt werden</p>
+          <div class="box" style="margin-bottom: 10px;">
+            <p>Nach Auswahl von Datensatz und Algorithmus kann der schlechteste sowie der beste Durchlauf durch einen Klick auf <strong>MinMax</strong> angezeigt werden.</p>
+            <p>Durch einen erneuten Klick auf <strong>MinMax</strong> können die Graphen wieder entfernt werden.</p>
+          </div>
       </v-container>
 
-       <v-container v-else>
+       <v-container v-if="actualPath === '/run'">
           <h3>Einstellung</h3>
-            <div style="padding-left: 10px;">
-              <h4>Algorithmen</h4>
-              <div style="padding-left: 10px;">
-                <p>Die Auswahl der Algorithmen findet im ersten Menüpunkt statt.</p>
-                <p>Hierbei ist eine Mehrfach-Auswahl möglich, indem sie mehrere Algorithmen anklicken</p> 
-              </div>
-
-              <h4>Datensatz</h4>
-              <div style="padding-left: 10px;">
-                <p>Die Auswahl des Datensatzes mit dem die Evaluierung durchgeführt werden soll, findet im zweiten Menüpunkt statt.</p>
-                <p>Hierbei ist keine Mehrfach-Auswahl möglich!</p>
-              </div>
-
-              <h4>Wiederholungen</h4>
-              <div style="padding-left: 10px;">
-                <p>Die Anzahl der Wiederholungen kann im dritten Menüpunkt frei gewählt werden.</p>
-                <p>Dabei wird jeder ausgewählter Algorithmus so häufig durchgeführt wie eingestellt.</p>
-                <p>Beispiel: 2 Algorithmen gewählt, Wiederholung = 10 sind dann 20 Durchläufe, jeweils 10x den ersten sowie den zweiten Algorithmus</p>
-              </div>
+          <div class="box" style="margin-bottom: 10px;">
+            <h4>Algorithmen</h4>
+            <div class="box">
+              <p>Alle Algorithmen (jars) die in dem angegebenen Ordner gefunden werden, werden hier aufgelistet. Die Auswahl mehrerer ist möglich.</p>
             </div>
 
-            <h3>Process Warteschlange</h3>
-            <div style="padding-left: 10px;">
-              <h4>Liste</h4>
-              <div style="padding-left: 10px;">
-                <p>Die Liste zeigt die Anzahl der Processe an die auf ihre Fertigstellung warten.</p>
-                <p>Processe mit einem Grünen Pfeil vorne, befinden sich zurzeit in der Ausführung</p>
-                <p>Processe mit einem Orangenen Pfeil vorne, warten noch auf ihre Ausführung</p>
-              </div>
-
-              <h4>Stop</h4>
-              <div style="padding-left: 10px;">
-                <p>Stop führt dazu, dass alle Processe die noch warten entfernt und die noch laufenden Processe zu Ende geführt werden</p>
-              </div>
+            <h4>Datensatz</h4>
+            <div class="box">
+              <p>Alle Datensätze (TSP oder SOP) die in dem angegebenen Ordner gefunden werden, werden hier aufgelistet. Es kann immer nur ein Datensatz gewählt werden.</p>
             </div>
 
-
-            <h3>Historie</h3>
-            <div style="padding-left: 10px;">
-              <h4>Liste</h4>
-              <div style="padding-left: 10px;">
-                <p>In der Liste werden alle Processe aufgeführt die erfolgreich und nicht erfolgreich durchlaufen wurden.</p>
-                <p>Processe die nicht erfolgreich waren, werden mit rot markiert.</p>
-                <p>Durch einen Klick auf den jeweiligen Process kann die Ausgabe des Processe betrachtet werden.</p>
-                <p>Hierbei ist es auch möglich die von der Library verursachten Ausgaben heraus zu filtern.</p>
-              </div>
-
-              <h4>Löschen</h4>
-              <div style="padding-left: 10px;">
-                <p>Das löschen, bereinigt die Liste. Alle Daten sind weiterhin persistent verfügbar.</p>
-              </div>
+            <h4>Wiederholungen</h4>
+            <div class="box">
+              <p>Jeder ausgewählte Algorithmus wird so häufig wiederholt wie hier angegeben wird.</p>
             </div>
-      
+
+            <h4>Threads</h4>
+            <div class="box">
+              <p>Hierbei kann gewählt werden wie viele Durchläufe gleichzeitig ausgeführt werden sollen. ( max. 6 ) </p>
+            </div>
+          </div>
+
+          <h3>Prozess Warteschlange</h3>
+          <div class="box" style="margin-bottom: 10px;">
+            <h4>Liste</h4>
+            <div class="box">
+              <p>Hier werden alle offenen Prozesse angezeigt.</p>
+              <p>Prozesse mit einem grünen Pfeil, befinden sich zurzeit in der Ausführung.</p>
+              <p>Prozesse mit einem orangenen Pfeil, warten noch auf ihre Ausführung.</p>
+            </div>
+
+            <h4>Stop</h4>
+            <div class="box">
+              <p>Alle wartenden Prozesse werden abgebrochen, alle laufenden werden zuende geführt.</p>
+            </div>
+          </div>
+
+
+          <h3>Historie</h3>
+          <div class="box" style="margin-bottom: 10px;">
+            <h4>Liste</h4>
+            <div class="box">
+              <p>Eine Aufführung aller abgeschlossenen Prozesse.</p>
+              <p>Erfolgreiche Prozesse werden mittels grün dargestellt.</p>
+              <p>Prozesse die fehlgeschlagen sind, werden mittels rot symbolisiert.</p>
+              <p>Der Output der Prozesse kann mittels eines klicks auf den jeweiligen Prozess betrachtet werden.</p>
+            </div>
+
+            <h4>Löschen</h4>
+            <div class="box">
+              <p>Leert die Liste, wobei alle Ergebnisse weiterhin persistent vorhanden sind.</p>
+            </div>
+          </div>
+      </v-container>
+
+       <v-container v-if="actualPath === '/'">
+          <h3>Einstellungen</h3>
+          <div class="box" style="margin-bottom: 10px;">
+            <p>In den Einstellungen müsst ihr drei Ordner angeben: </p>
+            <p>- einen der eure Algorithmen enthälten (falls mehrere Versionen vorhanden) </p>
+            <p>- einen der die unterschiedlichen Datensätze beinhaltet (TSP, SOP)</p>
+            <p>- einen in dem die Ergebnisse der Auswertung abgelegt werden <strong>(bitte hier einen leeren/neuen Ordner anlegen)</strong></p>
+          </div>
+          <h3>Auswertung</h3>
+
+
+          <div class="box" style="margin-bottom: 10px;">
+            <p>Zum Testen der Algorihtmen könnt ihr hier mehrere Durchläufe durchführen.</p>
+            <p>Euer Algorithmus muss wie folgt aufrufbar sein: </p>
+            <p><strong>java -jar &lt;Name.jar&gt; &lt;Weg zum Datensatz&gt; </strong></p>
+          </div>
+
+          <h3>Visualisierung</h3>
+          <div class="box" style="margin-bottom: 10px;">
+            Eine grafische Betrachtung der Ergebnisse eurer Durchläufe könnt ihr hier vornehmen.</p>
+          </div>
+
+          
       </v-container>
 
 
@@ -157,7 +186,6 @@ export default {
   mounted(){
     this.$router.beforeEach((to, from, next) => {
       this.actualPath = to.path;
-      console.log(this.actualPath);
       this.isOnStartScreen = to.path === "/";
       next();
     })
@@ -170,6 +198,16 @@ export default {
 </script>
 
 <style>
-  html { overflow-y: hidden; }
+  html, body {
+    overflow-y: hidden;
+  }
+
+  p{
+    margin: 0;
+  }
+
+  .box{
+    padding-left: 10px;
+  }
 </style>
 

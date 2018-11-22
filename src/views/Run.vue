@@ -63,7 +63,7 @@
               <ul class="list" :style="{maxHeight: maxHeight + 'px'}">
                 <template v-for="item in getProcesses">
                   <li v-for="(r,i) in item.runs" 
-                      :key="item.name + i" 
+                      :key="item.name + '/' + i" 
                       class="finished_items" 
                       @click="selected = r"
                       :style="{background: r.status === 'finished' ? 'lightgreen' : 'lightcoral'}">
@@ -231,7 +231,6 @@ export default {
     ConsolDialog
   },
   mounted(){
-    console.log(this.$refs.wrapper);
     this.onResize(this.$refs.wrapper)
   },
   directives: {

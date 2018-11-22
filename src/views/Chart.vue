@@ -3,16 +3,17 @@
     <v-dialog
       width="50%"
       v-model="dataDialog">
-      <v-card style="background: rgba(255,255,255,0.6); color: black;" >
+      <v-card style="background: rgba(255,255,255,0.6); color: black; padding-bottom: 15px;" >
         <v-toolbar style="background: rgba(255,255,255,0.8);">
           Auswahl der Algorithmen und Datensätzen
         </v-toolbar>
 
-        <v-layout row justify-space-around pa-4>
+        <v-alert style="margin: 15px; margin-bottom: 0" type="info" v-if="getAlgorithms.length === 0" value="true">Es sind keine Ergebnisse vorhanden. Bitte prüfe deinen Ordner oder führe Durchläufe aus!</v-alert>
+        <v-layout row justify-space-around pa-4 v-else>
           <v-flex xs5>
             <fieldset style="text-align:center; padding: 0; margin: 0;">
               <legend>Algorithmen</legend>
-              <v-layout row>
+              <v-layout row> 
                 <v-flex
                   xs6
                   class="list-elements"
@@ -56,7 +57,7 @@
         </v-layout>
         
       
-        <v-card-actions v-show="!minimize" style="background: rgba(255,255,255,0.6); color: white;">       
+        <v-card-actions v-show="!minimize" style="background: rgba(255,255,255,0.6); color: white;"  v-if="getAlgorithms.length > 0" >       
           <v-btn @click="reset">Lösche Einstellungen</v-btn>
           <v-spacer></v-spacer>
           <v-btn 
@@ -67,7 +68,7 @@
       </v-card>        
     </v-dialog>
  
-    <v-layout>
+    <v-layout style="margin-bottom: 24px;">
       <v-flex xs12>
         <v-card>
 
@@ -120,6 +121,7 @@ export default {
       xLabels: [],
       config: {
         type: 'line',
+        yAxisID: "0",
         data: {
           labels: [0, 20, 40, 60, 80]
         },

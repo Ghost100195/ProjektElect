@@ -68,14 +68,16 @@ async function readResultsFolder(path){
   return new Promise(async (resolve, reject) => {
     const toReturn = {};
     const jarFolders = await readDir(path);
-    for(let jarFolder of jarFolders){
-      let datasets = await readDir(path + "/" + jarFolder);
-      datasets = datasets.map((d) => {
-        return d.replace(".json", "");
-      });
-      toReturn[jarFolder] = [...datasets];
+    if(jarFolders){
+      for(let jarFolder of jarFolders){
+        let datasets = await readDir(path + "/" + jarFolder);
+        datasets = datasets.map((d) => {
+          return d.replace(".json", "");
+        });
+        toReturn[jarFolder] = [...datasets];
+      }
+      resolve(toReturn);
     }
-    resolve(toReturn);
   });
 }
 
@@ -89,8 +91,6 @@ async function readDir(path){
 }
 
 async function writeConfigFile(config){
-
-  console.log(config);
   return new Promise((resolve) => {
     fs.writeFile(process.cwd() + '/config.json', JSON.stringify(config, null, 2), (err) => {
       if(err){

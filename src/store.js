@@ -171,7 +171,7 @@ export default new Vuex.Store({
                                 jar: alg,
                                 name: alg.replace(".jar", ""),
                                 dataset: getters.getSelectedDataset
-                              }).map((r, i) => ({...r, id: alg+i }));
+                              }).map((r, i) => ({...r, id: alg+ "-" +i }));
         for(let r of runs){
           commit('addNewProcess', r);
         }
@@ -244,7 +244,6 @@ export default new Vuex.Store({
 
 
           dispatch('startProcess', getters.processQueue[Object.keys(getters.processQueue).find((key) => getters.processQueue[key].status === 'waiting')]);
-          console.log(`child process exited with code ${code}`);
         });
       }                         
     },

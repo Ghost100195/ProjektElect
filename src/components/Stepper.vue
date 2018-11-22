@@ -20,7 +20,7 @@
         >
           <v-container>
             <v-subheader>
-              Wähle den Ordner in dem sich die Algorithmen befinden
+              Wähle den Ordner in dem sich die Algorithmen (jars) befinden
             </v-subheader>
             <v-text-field
               :value="short(getDirectoryJarsPath)"
@@ -61,7 +61,7 @@
         >   
           <v-container>
             <v-subheader>
-              Wähle den Ordner in dem sich die Datensätze befinden
+              Wähle den Ordner in dem sich die Datensätze (TSP, SOP) befinden
             </v-subheader>
             <v-text-field
               :value="short(getDirectoryDatasetsPath)"
@@ -107,7 +107,7 @@
         >   
           <v-container>
             <v-subheader>
-              Wähle den Ordner in dem die Ergebnisse der Testläufe gespeichert werden
+              <p>Wähle einen <strong>leeren/neuen Ordner</strong> in dem die Ergebnisse der Durchläufe gespeichert werden</p>
             </v-subheader>
             <v-text-field
               :value="short(getDirectorySavesPath)"

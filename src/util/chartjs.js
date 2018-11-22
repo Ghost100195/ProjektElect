@@ -15,7 +15,7 @@ export function joinIterations(item, stepSize){
 export function avgIterations(items){
   return Object.keys(items).map((iteration) => {
     return items[iteration].reduce((acc, crr) => Number.parseInt(crr) + acc, 0)/items[iteration].length;
-  });
+  }).map((i) => Math.round(i));
 }
 
 export function standardDeviation(items, avg){
