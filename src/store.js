@@ -274,7 +274,6 @@ export default new Vuex.Store({
     },
     async readSetting({ commit }){
       const config = await readConfigFile();
-      console.log(config);
       commit('setDirectoryJars', config.directoryJars ? config.directoryJars : "");
       commit('setDirectoryDatasets', config.directoryDatasets ? config.directoryDatasets : "");
       commit('setDirectorySaves', config.directorySaves ? config.directorySaves : "");

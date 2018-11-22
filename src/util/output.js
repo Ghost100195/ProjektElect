@@ -92,7 +92,7 @@ async function writeConfigFile(config){
 
   console.log(config);
   return new Promise((resolve) => {
-    fs.writeFile('./config.json', JSON.stringify(config, null, 2), (err) => {
+    fs.writeFile(process.cwd() + '/config.json', JSON.stringify(config, null, 2), (err) => {
       if(err){
         console.log(err);
       }else{
@@ -104,7 +104,7 @@ async function writeConfigFile(config){
 
 async function readConfigFile(){
   return new Promise((resolve) => {
-    fs.readFile('./config.json', (err, data) => {
+    fs.readFile(process.cwd() + '/config.json', (err, data) => {
       if(err){
       }else{
         const parsed = JSON.parse(data.toString());

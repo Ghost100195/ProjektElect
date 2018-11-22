@@ -61,11 +61,6 @@ export default {
   computed:{
     ...mapGetters(['isSetuped']),
   },
-  watch: {
-    isSetuped(){
-      this.forceSetup = !this.isSetuped;
-    }
-  },
   mounted(){
     this.$router.beforeEach((to, from, next) => {
       this.isOnStartScreen = to.path === "/";
