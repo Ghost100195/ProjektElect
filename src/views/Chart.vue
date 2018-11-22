@@ -33,7 +33,7 @@
           </v-flex>
           <v-flex xs5>
             <fieldset style="text-align:center; padding: 0; margin: 0;">
-              <legend>Algorithmen</legend>
+              <legend>Datensätze</legend>
               <v-layout row>
                 <v-flex
                   xs6
