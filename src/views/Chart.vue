@@ -13,9 +13,9 @@
           <v-flex xs5>
             <fieldset style="text-align:center; padding: 0; margin: 0;">
               <legend>Algorithmen</legend>
-              <v-layout row> 
+              <v-layout row wrap> 
                 <v-flex
-                  xs6
+                  xs5
                   class="list-elements"
                   style=""
                   v-for="algorithm of getAlgorithms"
@@ -35,9 +35,9 @@
           <v-flex xs5>
             <fieldset style="text-align:center; padding: 0; margin: 0;">
               <legend>Datensätze</legend>
-              <v-layout row>
+              <v-layout row wrap>
                 <v-flex
-                  xs6
+                  xs5
                   class="list-elements"
                   style=""
                   v-for="dataset of getDatasets"
