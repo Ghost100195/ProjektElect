@@ -268,21 +268,38 @@ export default {
       this.config.data.datasets.push(newDataset);
       window.myLine.update();
     },
-    updateXAxies(iterations,stepSize){
-      for(let i = 0; i < iterations.length/stepSize; i++){
+    updateXAxies(iterations,stepSize){ 
+      this.config.data.labels = [];
+      for(let i = 0; i < iterations.length/stepSize; i++){ 
         if(!this.config.data.labels.includes(i * stepSize)){
           this.config.data.labels.push(i * stepSize);
         }
       }
     },
+
+    resetXAxies(times, stepSize){
+      this.config.data.labels = []; 
+      for(let i = 0; i < times; i++)
+        this.config.data.labels.push(i * stepSize);
+    },
     addDataset(item){  
+      let steps = item.runs[0].iterations.length;
+      if(steps < 20){ 
+        steps = 1;  
+      }
+      const minMax = this.checkMinMaxXAxies();
+      if(minMax.num < 20) minMax.num = 1;
+      this.stepSize = Math.min(Math.min(minMax.num, 20), steps);
+      const dataset = minMax.dataset.length > item.runs[0].iterations.length ? minMax.dataset : item.runs[0].iterations;
+    
       let joinedIterations = joinIterations(item, this.stepSize);
       let avgData = avgIterations(joinedIterations);
-      this.updateXAxies(item.runs[0].iterations, this.stepSize);
+      this.updateXAxies(dataset, this.stepSize);
       this.addDatasetToView({
         label: item.algorithm +"/"+ item.dataset,
         data: avgData,
       });
+    
     },
     calculateStandardDevision(){
       if(this.activ.standardDeviation){
@@ -301,7 +318,7 @@ export default {
         if(item){
           let joinedIterations = joinIterations(item, this.stepSize);
           let avgData = dataset.data;
-          let s = standardDeviation(joinedIterations, avgData);
+          let s = standardDeviation(joinedIterations, avgData, this.stepSize);
        
           for(let i = 0; i <= 2; i+= 2){
             this.addDatasetToView({
@@ -317,6 +334,7 @@ export default {
     },
     minMax(){
       if(this.activ.minMax){
+        /*
         this.activ.minMax = false;
         for(let dataset of this.config.data.datasets){
           const matching = dataset.label.match(/Min|Max/);
@@ -326,6 +344,11 @@ export default {
             if(this.loadedData[label]) this.addDataset(this.loadedData[label]);
           }
         } 
+        */
+        this.activ.minMax = false;
+
+         this.config.data.datasets = [];
+         this.load();
         return;
       }
       for(let dataset of this.config.data.datasets){
@@ -357,7 +380,7 @@ export default {
             label:  "Max: " + dataset.label,
             data: max,
           });
-          this.removeDataset(dataset.label);
+          //this.removeDataset(dataset.label);
         }
       }
     },
@@ -366,16 +389,42 @@ export default {
       window.myLine = new Chart(ctx, this.config);
     },
     removeEverthing(){
+      this.config.data.datasets = [];
+      window.myLine.update();
+
+
+/*
       this.config.data.datasets = this.config.data.datasets.filter((dataset) => {
         return this.selectedItemAsPath.includes(dataset.label)
       });
-      window.myLine.update();
+      const minMax = this.checkMinMaxXAxies();
+      if(minMax.dataset.length > 0 && minMax.num != Number.MAX_SAFE_INTEGER){
+        if(minMax.num < 20){
+          minMax.num = 1;  
+        }
+        this.stepSize = Math.min(minMax.num, 20);
+        this.updateXAxies(minMax.dataset, this.stepSize);
+      }
+*/
+     // window.myLine.update();
     },
     removeDataset(label){
       this.config.data.datasets = this.config.data.datasets.filter((dataset) => {
         return dataset.label !== label;
       });
+
       window.myLine.update();
+    },
+    checkMinMaxXAxies(){
+      return this.config.data.datasets.reduce((acc, crr) => {
+        if(acc.num > crr.data.length) {
+          acc.num = crr.data.length;
+        }
+        if(acc.dataset.length <= crr.data.length){
+          acc.dataset = crr.data;
+        }
+        return acc;
+      }, {dataset: [], num: Number.MAX_SAFE_INTEGER});     
     }
   },
   mounted(){

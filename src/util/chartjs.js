@@ -18,16 +18,16 @@ export function avgIterations(items){
   }).map((i) => Math.round(i));
 }
 
-export function standardDeviation(items, avg){
+export function standardDeviation(items, avg, steps){
   return Object.keys(items).map((iteration) => {
     return items[iteration]
       .reduce((acc, crr) => {
-        const result = crr - avg[Math.floor(iteration / 20)];
+        const result = crr - avg[Math.floor(iteration / steps)];
         return acc + result * result;
       }, 0)/items[iteration].length;
   }).map((val) => Math.sqrt(val));
 }
-
+ 
 export function transformIterationToDatasetData(iteration, stepSize){
   return iteration
     .filter((iter) => iter.iteration % stepSize === 0)
